@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MongoObjectIdScalar } from './gql-custom-scalar/mongoid.scalar';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';

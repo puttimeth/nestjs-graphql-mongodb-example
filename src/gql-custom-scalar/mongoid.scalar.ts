@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { Scalar } from '@nestjs/graphql';
 import { Kind, ASTNode, GraphQLScalarType } from 'graphql';
 import { Types } from 'mongoose';
 
