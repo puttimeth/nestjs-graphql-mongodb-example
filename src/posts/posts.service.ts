@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostDto } from './dto/get-post.dto';
 import { LikePostDto } from './dto/like-post.dto';
@@ -12,12 +12,11 @@ export class PostsService {
 
   async findAll(filterObject: GetPostDto = {}): Promise<Post[]> {
     let matchObject = {};
-    // convert some field to ObjectId for mongodb
-    if ('_id' in filterObject)
-      matchObject['_id'] = new Types.ObjectId(filterObject._id);
+    // create special case for some fields
+    if ('_id' in filterObject) matchObject['_id'] = filterObject._id;
     if ('title' in filterObject) matchObject['title'] = filterObject.title;
     if ('ownerId' in filterObject)
-      matchObject['ownerId'] = new Types.ObjectId(filterObject.ownerId);
+      matchObject['ownerId'] = filterObject.ownerId;
     if ('minLikes' in filterObject || 'maxLikes' in filterObject)
       matchObject[`likes`] = {};
     if ('minLikes' in filterObject)
@@ -31,10 +30,7 @@ export class PostsService {
   }
 
   async createPost(createPostDto: CreatePostDto): Promise<Post> {
-    return await new this.postModel({
-      ...createPostDto,
-      ownerId: new Types.ObjectId(createPostDto.ownerId),
-    }).save();
+    return await new this.postModel(createPostDto).save();
   }
 
   async likePost(likePostDto: LikePostDto): Promise<Post> {

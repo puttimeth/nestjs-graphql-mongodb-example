@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { User, UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 import { CreatePetDto } from './dto/create-pet.dto';
@@ -19,18 +19,7 @@ export class PetsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async findOneId(id: Types.ObjectId): Promise<Pet> {
-    return await this.petModel.findOne({ _id: id });
-  }
-
   async findAll(filterObject: GetPetDto = {}): Promise<Pet[]> {
-    let matchObject = {};
-    // convert some field to ObjectId for mongodb
-    if ('_id' in filterObject)
-      matchObject[`pets._id`] = new Types.ObjectId(filterObject._id);
-    if ('name' in filterObject) matchObject[`pets.name`] = filterObject.name;
-    if ('ownerId' in filterObject)
-      matchObject[`pets.ownerId`] = new Types.ObjectId(filterObject.ownerId);
     /**
      * 1. unwind all pets inside user
      * 2. filter only those match condition
@@ -43,7 +32,7 @@ export class PetsService {
         },
       },
       {
-        $match: matchObject,
+        $match: filterObject,
       },
       {
         $group: {
@@ -62,10 +51,7 @@ export class PetsService {
     const ownerUser = await this.usersService.findOneId(createPetDto.ownerId);
     if (!ownerUser) throw new BadRequestException('Unknown owner id.');
     // create pet
-    let newPet = new this.petModel({
-      ...createPetDto,
-      ownerId: new Types.ObjectId(createPetDto.ownerId),
-    });
+    let newPet = new this.petModel(createPetDto);
     const updatedUser = await this.userModel.findByIdAndUpdate(
       ownerUser._id,
       { $push: { pets: newPet } },
